@@ -1,0 +1,1302 @@
+<?xml-stylesheet href="ast.html.xsl" type="text/xsl" name="HTML" media="screen"?>
+<definition version="0.9" >
+  <attributetypes>
+    <type name="String" ctype="char*" init="NULL" copy="function" />
+    <type name="Int" ctype="int" init="0" copy="literal" />
+    <type name="Bool" ctype="bool" init="FALSE" copy="literal" />
+    <type name="Float" ctype="float" init="0.0" copy="literal" />
+    <!--  <type name="Type" ctype="type" init="T_void" copy="literal" /> -->
+    <type name="Type" ctype="type" init="T_void" copy="literal" /> 
+    <type name="BinOp" ctype="binop" init="BO_unknown" copy="literal" />
+    <type name="MonOp" ctype="monop" init="MO_unknown" copy="literal" />
+    <type name="Link" ctype="node*" init="NULL" copy="hash" />
+    <type name="CompilerPhase" ctype="compiler_phase_t" init="PH_initial" copy="literal" />
+  </attributetypes>
+  <phases>
+    <!-- id is the short id of the traversal 
+         name is a descriptive name
+         default gives the default traversal mode
+           user  a user defined function
+           sons  TravSons
+           none  TravNone
+           error TravError
+         include the include file needed for the traversal
+    -->
+    <general>
+      <traversal id="PRT" name="Print Syntax Tree" default="user"  include="print.h" />
+      <traversal id="COPY" name="Copy Syntax Tree" default="user" include="copy_node.h" />
+      <traversal id="FREE" name="Free Syntax Tree" default="user" include="free_node.h" />
+      <traversal id="CHK" name="Check the Tree" default="user" include="check.h" />
+      <traversal id="CA" name="Context analysis" default="user" include="contextanalysis.h" />
+      <traversal id="TC" name="Type check" default="user" include="typecheck.h" />
+      <!--traversal id="LP" name="Logic or-and pass" default="user" include="logicpass.h"/>-->
+      <traversal id="ACG" name="Assembly code generation" default="user" include="assemblycodegen.h" />      
+      <traversal id="michael" name="michael foo the syntax tree" default="sons" include="michael.h" >
+	      <travuser>
+		      <node name="BinOp" />
+		      <node name="Var" />
+	      </travuser>
+     </traversal>
+    </general>
+  </phases>
+  <nodesets>
+    <nodeset name="Expr">
+      <target>
+        <node name="BinOp" />
+        <node name="MonOp" />
+        <node name="Var" />
+        <node name="Num" />
+        <node name="Float" />
+        <node name="Bool" />
+	<node name="FunAp" />
+        <node name="Cast" />
+      </target>
+    </nodeset>
+    <nodeset name="Instr">
+      <target>
+        <node name="Assign" />
+        <node name="If" />
+        <node name="While" />
+        <node name="DoWhile" />
+        <node name="For" />
+        <node name="Return" />
+      </target>
+    </nodeset>
+    <nodeset name="Decl">
+      <target>
+        <node name="GlobalDef" />
+        <node name="Param" />
+        <node name="VarDec" />
+        <node name="For" />
+      </target>
+    </nodeset>
+    <nodeset name="ModuleDecl">
+	    <target>
+		    <node name="GlobalDef" />
+		    <node name="FunDef" />
+	    </target>
+    </nodeset>
+  </nodesets>
+
+
+  <syntaxtree>
+
+<!--
+
+  node Module :
+
+-->
+
+    <node name="Module">
+      <description>
+        Root node of syntax tree, holds lists of global variable extern declarations,
+        function extern declarations, global variable definitions and function 
+        definitions for the whole compilation unit. 
+      </description>
+      <sons>
+	 <son name="ModuleDecls">
+          <targets>
+             <target mandatory="yes">
+		     <node name="ModuleDecls" />
+               <phases>
+                 <all />
+               </phases>
+             </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes />
+      <flags />
+    </node>
+ 
+    <node name="ModuleDecls">
+	    <description>
+	    </description>
+	    <sons>
+		    <son name="ModuleDecl">
+			    <targets>
+				    <target mandatory="yes">
+					    <set name="ModuleDecl" />
+					    <phases>
+						    <all />
+					    </phases>
+				    </target>
+			    </targets>
+		    </son>
+		    <son name="Next">
+			    <targets>
+				    <target mandatory="no">
+					    <node name="ModuleDecls" />
+					    <phases>
+						    <all />
+					    </phases>
+				    </target>
+			    </targets>
+		    </son>
+	    </sons>
+	    <attributes />
+	    <flags />
+    </node>
+<!--
+
+  node GlobalDef :
+
+-->
+
+    <node name="GlobalDef">
+      <description>
+        This node represents global variables, both extern declarations and global
+        variables defined in the current compilation unit. The two cases can be 
+        distinguished via the IsExtern flag.
+      </description>
+      <sons>
+         <son name="VarInfo">
+           <targets>
+             <target mandatory="yes">
+               <node name="VarInfo" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+         <son name="Init">
+           <targets>
+             <target mandatory="no">
+               <set name="Expr" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+         <son name="Next">
+           <targets>
+             <target mandatory="no">
+               <node name="GlobalDef" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+      </sons>
+      <attributes />
+      <flags>
+        <flag name="IsExtern" />
+        <flag name="IsExport" />
+      </flags>
+    </node>
+
+<!--
+
+  node VarInfo :
+
+-->
+
+    <node name="VarInfo">
+      <description>
+        This node represents the essential information on a variable. Prior to 
+        further analysis this is mainly the variable's type. This node establishes
+        a uniform variable representation across various syntactically different 
+        forms of introducing a variable, i.e. global variable declarations, global
+        variable definitions, function parameters, local variables and for-loop
+        induction variables. VarInfo nodes are used as common targets for pointers
+        from the representations of all these syntactical constructs established 
+        during context analysis. The Decl link gives both access to the point of
+        declaration and determines the kind of variable.
+      </description>
+      <sons />
+      <attributes>
+        <attribute name="Type">
+          <type name="Type">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Name">
+          <type name="String">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Decl">
+          <type name="Link">
+            <targets>
+              <target mandatory="yes">
+                <set name="Decl" />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+      </attributes>
+      <flags />
+    </node>
+
+<!--
+
+  node FunDef :
+
+-->
+
+    <node name="FunDef">
+      <description>
+        The FunDef node is used to represent both function declarations and 
+        function definitions. It serves as the uniform target of back links from
+        function application sites to the corresponding function definition or
+        declaration to be established by context analysis. The node holds 
+        representations of the essential characteristics of a function, i.e.
+        return type, name, parameter list, local variable declarations and the
+        function body in the form of an instruction sequence. The IsExtern
+        flag allows us to distinguish function declarations from defintions.
+      </description>
+      <sons>
+         <son name="Params">
+           <targets>
+             <target mandatory="no">
+               <node name="Param" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+         <son name="LocalFuns">
+           <targets>
+             <target mandatory="no">
+               <node name="FunDef" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+         <son name="VarDecs">
+           <targets>
+             <target mandatory="no">
+               <node name="VarDec" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+         <son name="Body">
+           <targets>
+             <target mandatory="no">
+               <node name="Instrs" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+         <son name="Next">
+           <targets>
+             <target mandatory="no">
+               <node name="FunDef" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+       </sons>
+      <attributes>
+        <attribute name="RetType">
+          <type name="Type">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Name">
+          <type name="String">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+      </attributes>
+      <flags>
+        <flag name="IsExtern" />
+        <flag name="IsExport" />
+      </flags>
+    </node>
+ 
+<!--
+
+  node Param :
+
+-->
+
+    <node name="Param"> 
+      <description>
+        The Param node essentially implements a linked list of parameters
+        who themselves are represented by a VarInfo child node.
+      </description>
+      <sons>
+         <son name="VarInfo">
+           <targets>
+             <target mandatory="yes">
+               <node name="VarInfo" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+         <son name="Next">
+           <targets>
+             <target mandatory="no">
+               <node name="Param" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+      </sons>
+      <attributes />
+      <flags />
+    </node>
+ 
+<!--
+
+  node VarDec :
+
+-->
+
+    <node name="VarDec"> 
+      <description>
+        The VarDec node essentially implements a linked list of local variable
+        declarations who themselves are represented by a VarInfo child node.
+      </description>
+      <sons>
+         <son name="VarInfo">
+           <targets>
+             <target mandatory="yes">
+               <node name="VarInfo" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+         <son name="Init">
+           <targets>
+             <target mandatory="no">
+               <set name="Expr" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+         <son name="Next">
+           <targets>
+             <target mandatory="no">
+               <node name="VarDec" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+      </sons>
+      <attributes />
+      <flags />
+    </node>
+   
+<!--
+
+  node Instrs :
+
+-->
+
+     <node name="Instrs">
+      <description>
+        The Instrs node essentially implements a linked list of instructions
+        (or statements) who themselves are represented by one of nodes of the
+        Instrs node set as defined above.
+      </description>
+      <sons>
+        <son name="Instr">
+          <targets>
+            <target mandatory="yes">
+              <set name="Instr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+        <son name="Next">
+          <targets>
+            <target mandatory="no">
+              <node name="Instrs" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes />
+      <flags />
+    </node>
+    
+    <node name="Exprs">
+	    <description>
+		    The Instrs node essentially implements a linked list of instructions
+		    (or statements) who themselves are represented by one of nodes of the
+		    Instrs node set as defined above.
+	    </description>
+	    <sons>
+		    <son name="Expr">
+			    <targets>
+				    <target mandatory="yes">
+					    <set name="Expr" />
+					    <phases>
+						    <all />
+					    </phases>
+				    </target>
+			    </targets>
+		    </son>
+		    <son name="Next">
+			    <targets>
+				    <target mandatory="no">
+					    <node name="Exprs" />
+					    <phases>
+						    <all />
+					    </phases>
+				    </target>
+			    </targets>
+		    </son>
+	    </sons>
+	    <attributes />
+	    <flags />
+    </node>
+
+<!--
+
+  node Assign :
+
+-->
+
+    <node name="Assign">
+      <description>
+        The Assign node serves two related purposes: Firstly it represents 
+        the assignment of (the value of) an expression to a variable. Secondly,
+        it represents a function/procedure call without assignment of a value
+        to a variable. Due to the latter the Let child node is not mandatory.
+      </description>
+      <sons>
+        <son name="Let">
+          <targets>
+            <target mandatory="no">
+              <node name="VarLet" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+        <son name="Expr">
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes />
+      <flags />
+    </node>
+
+<!--
+
+  node If :
+
+-->
+
+    <node name="If">
+      <description>
+        The If node represents an if-then-else construct. Note that both
+        the Then and the Else child nodes are not mandatory. This is due
+        to the possibility of an empty block in the concrete syntax of the
+        language, which, if no special measures are taken, leads to an
+        empty sequence of statements despite the presense of the then- 
+        or else-case in the program.
+      </description>
+      <sons>
+        <son name="Pred">
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+        <son name="Then">
+          <targets>
+            <target mandatory="no">
+              <node name="Instrs" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+        <son name="Else">
+          <targets>
+            <target mandatory="no">
+              <node name="Instrs" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes />
+      <flags />
+    </node>
+
+<!--
+
+  node While :
+
+-->
+
+    <node name="While">
+      <description>
+        The While node represents a while-loop. Note that the Body
+        child node is not mandatory due to the possibility of an
+        empty block as loop body in the concrete syntax.
+      </description>
+      <sons>
+        <son name="Pred">
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+        <son name="Body">
+          <targets>
+            <target mandatory="no">
+              <node name="Instrs" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes />
+      <flags />
+    </node>
+
+<!--
+
+  node DoWhile :
+
+-->
+
+    <node name="DoWhile">
+      <description>
+        The DoWhile node represents a do-while-loop. Note that the Body
+        child node is not mandatory due to the possibility of an
+        empty block as loop body in the concrete syntax.
+      </description>
+      <sons>
+        <son name="Pred">
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+        <son name="Body">
+          <targets>
+            <target mandatory="no">
+              <node name="Instrs" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes />
+      <flags />
+    </node>
+
+<!--
+
+  node For :
+
+-->
+
+    <node name="For">
+      <description>
+        The For node represents a for-loop. The for-loop introduces a fresh
+        induction variable whose scope is limited to the loop istelf. Hence,
+        the For node contains a Var child node that is a VarInfo node. 
+        Further to this the node contains the uo to three expressions that
+        define the iteration space (start, stop and step) and a loop body
+        that may be empty for exactly the same reason as those of the other
+        control flow constructs.
+      </description>
+      <sons>
+         <son name="Var">
+           <targets>
+             <target mandatory="yes">
+               <node name="VarInfo" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+        <son name="Start">
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+        <son name="Stop">
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+        <son name="Step">
+          <targets>
+            <target mandatory="no">
+              <set name="Expr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+        <son name="Body">
+          <targets>
+            <target mandatory="no">
+              <node name="Instrs" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes />
+      <flags />
+    </node>
+
+<!--
+
+  node Return :
+
+-->
+
+    <node name="Return">
+      <description>
+        The Return node represents a return-statement. Hence, it holds
+        a single expression.
+      </description>
+      <sons>
+        <son name="Expr">
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes />
+      <flags />
+    </node>
+
+<!--
+
+  node VarLet :
+
+-->
+
+    <node name="VarLet">
+      <description>
+        The VarLet node represents the defining occurrence of a variable,
+        i.e. a variable on the left hand side of an assignment.
+        It supports two alternative ways of representing the variable.
+        From parsing until context analysis the variable is represented
+        as a simple string as inferred by the parser. As a result of 
+        context analysis this initial representation shall be replaced
+        by a link to the corresponding VarInfo node. This gives subsequent
+        compiler phases access to data such as the variable's type or the
+        kind of declaration (global/local/parameter/induction).
+        However, a link back to the VarInfo node is insufficient in the 
+        presence of hierarchically nested scopes. In addition we need to
+        infer during context analysis how many scoping levels we need to 
+        go up in order to find a variable's declaration and keep that 
+        information thereafter alongside the link itself.
+      </description>
+      <sons />
+      <attributes>
+        <attribute name="Name">
+          <type name="String">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                  <!-- 
+             <range from="initial" to="context-analysis">
+             -->
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Info">
+          <type name="Link">
+            <targets>
+              <target mandatory="yes">
+                <node name="VarInfo" />>
+                <phases>
+                  <all />
+                  <!-- 
+             <range from="context-analysis" to="final">
+             -->
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Scope">
+          <type name="Int">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                  <!-- 
+             <range from="context-analysis" to="final">
+             -->
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+      </attributes>
+      <flags />
+    </node>
+
+<!--
+
+  node BinOp :
+
+-->
+
+    <node name="BinOp">
+      <description>
+        This node represents applications of binary operator symbols 
+        to two operands in expression position.
+      </description>
+      <sons>
+        <son name="Left">
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+        <son name="Right">
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes>
+        <attribute name="Op">
+          <type name="BinOp">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+      </attributes>
+      <flags />
+    </node>
+
+<!--
+
+  node MonOp :
+
+-->
+
+    <node name="MonOp">
+      <description>
+        This node represents applications of unary operator symbols 
+        to an operand in expression position.
+      </description>
+      <sons>
+        <son name="Arg">
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes>
+        <attribute name="Op">
+          <type name="MonOp">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+      </attributes>
+      <flags />
+    </node>
+
+<!--
+
+  node Cast :
+
+-->
+
+    <node name="Cast">
+      <description>
+        This node represents a type conversion.
+      </description>
+      <sons>
+        <son name="Arg">
+          <targets>
+            <target mandatory="yes">
+              <set name="Expr" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes>
+        <attribute name="Type">
+          <type name="Type">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+      </attributes>
+      <flags />
+    </node>
+
+<!--
+
+  node FunAp :
+
+-->
+
+    <node name="FunAp">
+      <description>
+        This node represents an application of a user-defined function
+        in expression position. In analogy to variables we employ two
+        representations of the applied function. After parsing the function
+        is simply represented as a character string as delivered by the
+        parser. Context analysis associates the function application with
+        some function definition. This inferred information is kept in
+        the abstract syntax tree as a back link (pointer) from the FunAp
+        node to the corresponding FunDef node.
+        Again in analogy to variables, a link back to the FunDef node alone
+        is insufficient in the presence of hierarchically nested function
+        definitions. In addition we need to infer during context analysis 
+        how many scoping levels we need to go up in order to find a 
+        variable's declaration and store this information thereafter 
+        alongside the link itself.
+      </description>
+      <sons>
+        <son name="Args">
+          <targets>
+            <target mandatory="no">
+              <node name="Arg" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes>
+        <attribute name="Name">
+          <type name="String">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                  <!-- 
+             <range from="initial" to="context-analysis">
+             -->
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Fun">
+          <type name="Link">
+            <targets>
+              <target mandatory="yes">
+                <node name="FunDef" />
+                <phases>
+                  <all />
+                  <!-- 
+             <range from="context-analysis" to="final">
+             -->
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Scope">
+          <type name="Int">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                  <!-- 
+             <range from="context-analysis" to="final">
+             -->
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+      </attributes>
+      <flags />
+    </node>
+
+<!--
+
+  node Arg :
+
+-->
+
+    <node name="Arg"> 
+      <description>
+      </description>
+      <sons>
+         <son name="Expr">
+           <targets>
+             <target mandatory="yes">
+               <set name="Expr" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+         <son name="Next">
+           <targets>
+             <target mandatory="no">
+               <node name="Arg" />
+               <phases>
+                 <all />
+               </phases>
+            </target>
+          </targets>
+         </son>
+      </sons>
+      <attributes />
+      <flags />
+    </node>
+ 
+<!--
+
+  node Var :
+
+-->
+
+    <node name="Var">
+      <description>
+        The Var node represents a used occurrence of a variable,
+        i.e. a variable in expression position.
+        It supports two alternative ways of representing the variable.
+        From parsing until context analysis the variable is represented
+        as a simple string as inferred by the parser. As a result of 
+        context analysis this initial representation shall be replaced
+        by a link to the corresponding VarInfo node. This gives subsequent
+        compiler phases access to data such as the variable's type or the
+        kind of declaration (global/local/parameter/induction).
+        However, a link back to the VarInfo node is insufficient in the 
+        presence of hierarchically nested scopes. In addition we need to
+        infer during context analysis how many scoping levels we need to 
+        go up in order to find a variable's declaration and keep that 
+        information thereafter alongside the link itself.
+      </description>
+      <sons />
+      <attributes>
+        <attribute name="Name">
+          <type name="String">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                  <!-- 
+             <range from="initial" to="context-analysis">
+             -->
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Info">
+          <type name="Link">
+            <targets>
+              <target mandatory="yes">
+                <node name="VarInfo" />>
+                <phases>
+                  <all />
+                  <!-- 
+             <range from="context-analysis" to="final">
+             -->
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="Scope">
+          <type name="Int">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                  <!-- 
+             <range from="context-analysis" to="final">
+             -->
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+      </attributes>
+      <flags />
+    </node>
+
+<!--
+
+  node Num :
+
+-->
+
+   <node name="Num">
+      <description>
+        This node represents an integer constant.
+      </description>
+      <sons />
+      <attributes>
+        <attribute name="Value">
+          <type name="Int">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+      </attributes>
+    </node>
+
+<!--
+
+  node Float :
+
+-->
+
+    <node name="Float">
+      <description>
+        This node represents a floating point constant.
+      </description>
+      <sons />
+      <attributes>
+        <attribute name="Value">
+          <type name="Float">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+      </attributes>
+    </node>
+
+<!--
+
+  node Bool :
+
+-->
+
+    <node name="Bool">
+      <description>
+        This node represents a Boolean constant.
+      </description>
+      <sons />
+      <attributes>
+        <attribute name="Value">
+          <type name="Bool">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+      </attributes>
+    </node>
+
+<!--
+
+  node Error :
+
+-->
+
+    <node name="Error">
+      <description>
+        This is a framework internal node that stores consistency errors
+        within the abstract syntax tree.
+      </description>
+      <sons>
+        <son name="Next">
+          <targets>
+            <target mandatory="no" >
+              <node name="Error" />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </son>
+      </sons>
+      <attributes>
+        <attribute name="message">
+          <type name="String">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+        <attribute name="anyphase">
+          <type name="CompilerPhase">
+            <targets>
+              <target mandatory="yes">
+                <any />
+                <phases>
+                  <all />
+                </phases>
+              </target>
+            </targets>
+          </type>
+        </attribute>
+      </attributes>
+      <flags />
+    </node>
+  </syntaxtree>
+</definition>
+  

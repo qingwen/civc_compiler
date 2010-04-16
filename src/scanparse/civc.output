@@ -1,0 +1,1240 @@
+Nonterminals useless in grammar
+
+   fundefs
+   fundef
+   fundef1
+   fundef2
+   vardecs
+   instrs
+   instr
+   return
+   assign
+   @1
+   cond
+   @2
+   optelse
+   doloop
+   @3
+   whileloop
+   @4
+   forloop
+   block
+   @5
+   varlet
+
+
+Terminals unused in grammar
+
+   NE
+   IF
+   RETURN
+   FOR
+   WHILE
+   DO
+   BRACE_L
+   BRACE_R
+   SQBR_L
+   SQBR_R
+   GLOBAL
+   MM_OP
+   EXCL
+   TILDE
+
+
+Rules useless in grammar
+
+   58 decl: fundef
+
+   59 fundefs: fundef fundefs
+   60        | fundef
+
+   61 fundef: EXPORT fundef1
+   62       | fundef1
+
+   63 fundef1: basictype fundef2
+   64        | TYPE_VOID fundef2
+
+   65 fundef2: ID BRACKET_L params BRACKET_R BRACE_L vardecs fundefs instrs BRACE_R
+
+   66 vardecs: /* empty */
+   67        | basictype varlet LET expr SEMICOLON vardecs
+   68        | basictype varlet SEMICOLON vardecs
+
+   69 instrs: instr
+   70       | instr instrs
+
+   71 instr: assign
+   72      | cond
+   73      | doloop SEMICOLON
+   74      | whileloop
+   75      | forloop
+   76      | return
+
+   77 return: RETURN expr SEMICOLON
+
+   78 @1: /* empty */
+
+   79 assign: varlet LET @1 expr SEMICOLON
+   80       | expr_fun_call SEMICOLON
+
+   81 @2: /* empty */
+
+   82 cond: IF @2 BRACKET_L expr BRACKET_R block optelse
+
+   83 optelse: ELSE block
+   84        | /* empty */
+
+   85 @3: /* empty */
+
+   86 doloop: DO @3 block WHILE BRACKET_L expr BRACKET_R
+
+   87 @4: /* empty */
+
+   88 whileloop: WHILE @4 BRACKET_L expr BRACKET_R block
+
+   89 forloop: FOR BRACKET_L TYPE_INT var LET expr COMMA expr COMMA expr BRACKET_R block
+   90        | FOR BRACKET_L TYPE_INT var LET expr COMMA expr COMMA BRACKET_R block
+
+   91 @5: /* empty */
+
+   92 block: BRACE_L @5 instrs BRACE_R
+   93      | instr
+
+   94 varlet: ID
+
+
+Grammar
+
+    0 $accept: module $end
+
+    1 module: decls
+
+    2 decls: decl decls
+    3      | decl
+
+    4 decl: globaldecl
+    5     | fundecl
+    6     | globaldef
+
+    7 globaldecl: EXTERN basictype var SEMICOLON
+
+    8 globaldef: EXPORT globaldef1
+    9          | globaldef1
+
+   10 globaldef1: basictype globaldef2
+
+   11 globaldef2: var LET expr SEMICOLON
+   12           | var SEMICOLON
+
+   13 fundecl: EXTERN basictype ID BRACKET_L params BRACKET_R SEMICOLON
+   14        | EXTERN TYPE_VOID ID BRACKET_L params BRACKET_R SEMICOLON
+
+   15 params: /* empty */
+   16       | basictype var COMMA params
+   17       | basictype var
+
+   18 var: ID
+
+   19 expr: constant
+   20     | var
+   21     | expr binop expr
+   22     | monop expr
+   23     | BRACKET_L expr BRACKET_R
+   24     | expr_fun_call
+   25     | BRACKET_L basictype BRACKET_R expr
+
+   26 exprs: expr COMMA exprs
+   27      | expr
+
+   28 @6: /* empty */
+
+   29 expr_fun_call: var BRACKET_L @6 opt_arguments BRACKET_R
+
+   30 @7: /* empty */
+
+   31 expr_fun_call: var BRACKET_L @7 BRACKET_R
+
+   32 opt_arguments: expr COMMA exprs
+   33              | expr
+
+   34 constant: floatval
+   35         | intval
+   36         | boolval
+
+   37 floatval: FLOAT
+
+   38 basictype: TYPE_FLOAT
+   39          | TYPE_BOOL
+   40          | TYPE_INT
+
+   41 intval: NUM
+
+   42 boolval: TRUEVAL
+   43        | FALSEVAL
+
+   44 binop: PLUS
+   45      | MINUS
+   46      | STAR
+   47      | SLASH
+   48      | PERCENT
+   49      | LE
+   50      | LT
+   51      | GE
+   52      | GT
+   53      | EQ
+   54      | OR
+   55      | AND
+   56      | LET
+
+   57 monop: NEG
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+BRACKET_L (258) 13 14 23 25 29 31
+BRACKET_R (259) 13 14 23 25 29 31
+COMMA (260) 16 26 32
+SEMICOLON (261) 7 11 12 13 14
+MINUS (262) 45
+PLUS (263) 44
+STAR (264) 46
+SLASH (265) 47
+PERCENT (266) 48
+LE (267) 49
+LT (268) 50
+GE (269) 51
+GT (270) 52
+EQ (271) 53
+NE (272)
+OR (273) 54
+AND (274) 55
+TRUEVAL (275) 42
+FALSEVAL (276) 43
+LET (277) 11 56
+NEG (278) 57
+EXTERN (279) 7 13 14
+EXPORT (280) 8
+IF (281)
+RETURN (282)
+FOR (283)
+ELSE (284)
+WHILE (285)
+DO (286)
+TYPE_FLOAT (287) 38
+TYPE_BOOL (288) 39
+TYPE_INT (289) 40
+TYPE_VOID (290) 14
+BRACE_L (291)
+BRACE_R (292)
+SQBR_L (293)
+SQBR_R (294)
+GLOBAL (295)
+NUM (296) 41
+FLOAT (297) 37
+ID (298) 13 14 18
+BM_OP (299)
+CAST (300)
+MM_OP (301)
+EXCL (302)
+TILDE (303)
+
+
+Nonterminals, with rules where they appear
+
+$accept (49)
+    on left: 0
+module (50)
+    on left: 1, on right: 0
+decls (51)
+    on left: 2 3, on right: 1 2
+decl (52)
+    on left: 4 5 6, on right: 2 3
+globaldecl (53)
+    on left: 7, on right: 4
+globaldef (54)
+    on left: 8 9, on right: 6
+globaldef1 (55)
+    on left: 10, on right: 8 9
+globaldef2 (56)
+    on left: 11 12, on right: 10
+fundecl (57)
+    on left: 13 14, on right: 5
+params (58)
+    on left: 15 16 17, on right: 13 14 16
+var (59)
+    on left: 18, on right: 7 11 12 16 17 20 29 31
+expr (60)
+    on left: 19 20 21 22 23 24 25, on right: 11 21 22 23 25 26 27 32
+    33
+exprs (61)
+    on left: 26 27, on right: 26 32
+expr_fun_call (62)
+    on left: 29 31, on right: 24
+@6 (63)
+    on left: 28, on right: 29
+@7 (64)
+    on left: 30, on right: 31
+opt_arguments (65)
+    on left: 32 33, on right: 29
+constant (66)
+    on left: 34 35 36, on right: 19
+floatval (67)
+    on left: 37, on right: 34
+basictype (68)
+    on left: 38 39 40, on right: 7 10 13 16 17 25
+intval (69)
+    on left: 41, on right: 35
+boolval (70)
+    on left: 42 43, on right: 36
+binop (71)
+    on left: 44 45 46 47 48 49 50 51 52 53 54 55 56, on right: 21
+monop (72)
+    on left: 57, on right: 22
+
+
+state 0
+
+    0 $accept: . module $end
+
+    EXTERN      shift, and go to state 1
+    EXPORT      shift, and go to state 2
+    TYPE_FLOAT  shift, and go to state 3
+    TYPE_BOOL   shift, and go to state 4
+    TYPE_INT    shift, and go to state 5
+
+    module      go to state 6
+    decls       go to state 7
+    decl        go to state 8
+    globaldecl  go to state 9
+    globaldef   go to state 10
+    globaldef1  go to state 11
+    fundecl     go to state 12
+    basictype   go to state 13
+
+
+state 1
+
+    7 globaldecl: EXTERN . basictype var SEMICOLON
+   13 fundecl: EXTERN . basictype ID BRACKET_L params BRACKET_R SEMICOLON
+   14        | EXTERN . TYPE_VOID ID BRACKET_L params BRACKET_R SEMICOLON
+
+    TYPE_FLOAT  shift, and go to state 3
+    TYPE_BOOL   shift, and go to state 4
+    TYPE_INT    shift, and go to state 5
+    TYPE_VOID   shift, and go to state 14
+
+    basictype  go to state 15
+
+
+state 2
+
+    8 globaldef: EXPORT . globaldef1
+
+    TYPE_FLOAT  shift, and go to state 3
+    TYPE_BOOL   shift, and go to state 4
+    TYPE_INT    shift, and go to state 5
+
+    globaldef1  go to state 16
+    basictype   go to state 13
+
+
+state 3
+
+   38 basictype: TYPE_FLOAT .
+
+    $default  reduce using rule 38 (basictype)
+
+
+state 4
+
+   39 basictype: TYPE_BOOL .
+
+    $default  reduce using rule 39 (basictype)
+
+
+state 5
+
+   40 basictype: TYPE_INT .
+
+    $default  reduce using rule 40 (basictype)
+
+
+state 6
+
+    0 $accept: module . $end
+
+    $end  shift, and go to state 17
+
+
+state 7
+
+    1 module: decls .
+
+    $default  reduce using rule 1 (module)
+
+
+state 8
+
+    2 decls: decl . decls
+    3      | decl .
+
+    EXTERN      shift, and go to state 1
+    EXPORT      shift, and go to state 2
+    TYPE_FLOAT  shift, and go to state 3
+    TYPE_BOOL   shift, and go to state 4
+    TYPE_INT    shift, and go to state 5
+
+    $default  reduce using rule 3 (decls)
+
+    decls       go to state 18
+    decl        go to state 8
+    globaldecl  go to state 9
+    globaldef   go to state 10
+    globaldef1  go to state 11
+    fundecl     go to state 12
+    basictype   go to state 13
+
+
+state 9
+
+    4 decl: globaldecl .
+
+    $default  reduce using rule 4 (decl)
+
+
+state 10
+
+    6 decl: globaldef .
+
+    $default  reduce using rule 6 (decl)
+
+
+state 11
+
+    9 globaldef: globaldef1 .
+
+    $default  reduce using rule 9 (globaldef)
+
+
+state 12
+
+    5 decl: fundecl .
+
+    $default  reduce using rule 5 (decl)
+
+
+state 13
+
+   10 globaldef1: basictype . globaldef2
+
+    ID  shift, and go to state 19
+
+    globaldef2  go to state 20
+    var         go to state 21
+
+
+state 14
+
+   14 fundecl: EXTERN TYPE_VOID . ID BRACKET_L params BRACKET_R SEMICOLON
+
+    ID  shift, and go to state 22
+
+
+state 15
+
+    7 globaldecl: EXTERN basictype . var SEMICOLON
+   13 fundecl: EXTERN basictype . ID BRACKET_L params BRACKET_R SEMICOLON
+
+    ID  shift, and go to state 23
+
+    var  go to state 24
+
+
+state 16
+
+    8 globaldef: EXPORT globaldef1 .
+
+    $default  reduce using rule 8 (globaldef)
+
+
+state 17
+
+    0 $accept: module $end .
+
+    $default  accept
+
+
+state 18
+
+    2 decls: decl decls .
+
+    $default  reduce using rule 2 (decls)
+
+
+state 19
+
+   18 var: ID .
+
+    $default  reduce using rule 18 (var)
+
+
+state 20
+
+   10 globaldef1: basictype globaldef2 .
+
+    $default  reduce using rule 10 (globaldef1)
+
+
+state 21
+
+   11 globaldef2: var . LET expr SEMICOLON
+   12           | var . SEMICOLON
+
+    SEMICOLON  shift, and go to state 25
+    LET        shift, and go to state 26
+
+
+state 22
+
+   14 fundecl: EXTERN TYPE_VOID ID . BRACKET_L params BRACKET_R SEMICOLON
+
+    BRACKET_L  shift, and go to state 27
+
+
+state 23
+
+   13 fundecl: EXTERN basictype ID . BRACKET_L params BRACKET_R SEMICOLON
+   18 var: ID .
+
+    BRACKET_L  shift, and go to state 28
+
+    $default  reduce using rule 18 (var)
+
+
+state 24
+
+    7 globaldecl: EXTERN basictype var . SEMICOLON
+
+    SEMICOLON  shift, and go to state 29
+
+
+state 25
+
+   12 globaldef2: var SEMICOLON .
+
+    $default  reduce using rule 12 (globaldef2)
+
+
+state 26
+
+   11 globaldef2: var LET . expr SEMICOLON
+
+    BRACKET_L  shift, and go to state 30
+    TRUEVAL    shift, and go to state 31
+    FALSEVAL   shift, and go to state 32
+    NEG        shift, and go to state 33
+    NUM        shift, and go to state 34
+    FLOAT      shift, and go to state 35
+    ID         shift, and go to state 19
+
+    var            go to state 36
+    expr           go to state 37
+    expr_fun_call  go to state 38
+    constant       go to state 39
+    floatval       go to state 40
+    intval         go to state 41
+    boolval        go to state 42
+    monop          go to state 43
+
+
+state 27
+
+   14 fundecl: EXTERN TYPE_VOID ID BRACKET_L . params BRACKET_R SEMICOLON
+
+    TYPE_FLOAT  shift, and go to state 3
+    TYPE_BOOL   shift, and go to state 4
+    TYPE_INT    shift, and go to state 5
+
+    $default  reduce using rule 15 (params)
+
+    params     go to state 44
+    basictype  go to state 45
+
+
+state 28
+
+   13 fundecl: EXTERN basictype ID BRACKET_L . params BRACKET_R SEMICOLON
+
+    TYPE_FLOAT  shift, and go to state 3
+    TYPE_BOOL   shift, and go to state 4
+    TYPE_INT    shift, and go to state 5
+
+    $default  reduce using rule 15 (params)
+
+    params     go to state 46
+    basictype  go to state 45
+
+
+state 29
+
+    7 globaldecl: EXTERN basictype var SEMICOLON .
+
+    $default  reduce using rule 7 (globaldecl)
+
+
+state 30
+
+   23 expr: BRACKET_L . expr BRACKET_R
+   25     | BRACKET_L . basictype BRACKET_R expr
+
+    BRACKET_L   shift, and go to state 30
+    TRUEVAL     shift, and go to state 31
+    FALSEVAL    shift, and go to state 32
+    NEG         shift, and go to state 33
+    TYPE_FLOAT  shift, and go to state 3
+    TYPE_BOOL   shift, and go to state 4
+    TYPE_INT    shift, and go to state 5
+    NUM         shift, and go to state 34
+    FLOAT       shift, and go to state 35
+    ID          shift, and go to state 19
+
+    var            go to state 36
+    expr           go to state 47
+    expr_fun_call  go to state 38
+    constant       go to state 39
+    floatval       go to state 40
+    basictype      go to state 48
+    intval         go to state 41
+    boolval        go to state 42
+    monop          go to state 43
+
+
+state 31
+
+   42 boolval: TRUEVAL .
+
+    $default  reduce using rule 42 (boolval)
+
+
+state 32
+
+   43 boolval: FALSEVAL .
+
+    $default  reduce using rule 43 (boolval)
+
+
+state 33
+
+   57 monop: NEG .
+
+    $default  reduce using rule 57 (monop)
+
+
+state 34
+
+   41 intval: NUM .
+
+    $default  reduce using rule 41 (intval)
+
+
+state 35
+
+   37 floatval: FLOAT .
+
+    $default  reduce using rule 37 (floatval)
+
+
+state 36
+
+   20 expr: var .
+   29 expr_fun_call: var . BRACKET_L @6 opt_arguments BRACKET_R
+   31              | var . BRACKET_L @7 BRACKET_R
+
+    BRACKET_L  shift, and go to state 49
+
+    $default  reduce using rule 20 (expr)
+
+
+state 37
+
+   11 globaldef2: var LET expr . SEMICOLON
+   21 expr: expr . binop expr
+
+    SEMICOLON  shift, and go to state 50
+    MINUS      shift, and go to state 51
+    PLUS       shift, and go to state 52
+    STAR       shift, and go to state 53
+    SLASH      shift, and go to state 54
+    PERCENT    shift, and go to state 55
+    LE         shift, and go to state 56
+    LT         shift, and go to state 57
+    GE         shift, and go to state 58
+    GT         shift, and go to state 59
+    EQ         shift, and go to state 60
+    OR         shift, and go to state 61
+    AND        shift, and go to state 62
+    LET        shift, and go to state 63
+
+    binop  go to state 64
+
+
+state 38
+
+   24 expr: expr_fun_call .
+
+    $default  reduce using rule 24 (expr)
+
+
+state 39
+
+   19 expr: constant .
+
+    $default  reduce using rule 19 (expr)
+
+
+state 40
+
+   34 constant: floatval .
+
+    $default  reduce using rule 34 (constant)
+
+
+state 41
+
+   35 constant: intval .
+
+    $default  reduce using rule 35 (constant)
+
+
+state 42
+
+   36 constant: boolval .
+
+    $default  reduce using rule 36 (constant)
+
+
+state 43
+
+   22 expr: monop . expr
+
+    BRACKET_L  shift, and go to state 30
+    TRUEVAL    shift, and go to state 31
+    FALSEVAL   shift, and go to state 32
+    NEG        shift, and go to state 33
+    NUM        shift, and go to state 34
+    FLOAT      shift, and go to state 35
+    ID         shift, and go to state 19
+
+    var            go to state 36
+    expr           go to state 65
+    expr_fun_call  go to state 38
+    constant       go to state 39
+    floatval       go to state 40
+    intval         go to state 41
+    boolval        go to state 42
+    monop          go to state 43
+
+
+state 44
+
+   14 fundecl: EXTERN TYPE_VOID ID BRACKET_L params . BRACKET_R SEMICOLON
+
+    BRACKET_R  shift, and go to state 66
+
+
+state 45
+
+   16 params: basictype . var COMMA params
+   17       | basictype . var
+
+    ID  shift, and go to state 19
+
+    var  go to state 67
+
+
+state 46
+
+   13 fundecl: EXTERN basictype ID BRACKET_L params . BRACKET_R SEMICOLON
+
+    BRACKET_R  shift, and go to state 68
+
+
+state 47
+
+   21 expr: expr . binop expr
+   23     | BRACKET_L expr . BRACKET_R
+
+    BRACKET_R  shift, and go to state 69
+    MINUS      shift, and go to state 51
+    PLUS       shift, and go to state 52
+    STAR       shift, and go to state 53
+    SLASH      shift, and go to state 54
+    PERCENT    shift, and go to state 55
+    LE         shift, and go to state 56
+    LT         shift, and go to state 57
+    GE         shift, and go to state 58
+    GT         shift, and go to state 59
+    EQ         shift, and go to state 60
+    OR         shift, and go to state 61
+    AND        shift, and go to state 62
+    LET        shift, and go to state 63
+
+    binop  go to state 64
+
+
+state 48
+
+   25 expr: BRACKET_L basictype . BRACKET_R expr
+
+    BRACKET_R  shift, and go to state 70
+
+
+state 49
+
+   29 expr_fun_call: var BRACKET_L . @6 opt_arguments BRACKET_R
+   31              | var BRACKET_L . @7 BRACKET_R
+
+    BRACKET_R  reduce using rule 30 (@7)
+    $default   reduce using rule 28 (@6)
+
+    @6  go to state 71
+    @7  go to state 72
+
+
+state 50
+
+   11 globaldef2: var LET expr SEMICOLON .
+
+    $default  reduce using rule 11 (globaldef2)
+
+
+state 51
+
+   45 binop: MINUS .
+
+    $default  reduce using rule 45 (binop)
+
+
+state 52
+
+   44 binop: PLUS .
+
+    $default  reduce using rule 44 (binop)
+
+
+state 53
+
+   46 binop: STAR .
+
+    $default  reduce using rule 46 (binop)
+
+
+state 54
+
+   47 binop: SLASH .
+
+    $default  reduce using rule 47 (binop)
+
+
+state 55
+
+   48 binop: PERCENT .
+
+    $default  reduce using rule 48 (binop)
+
+
+state 56
+
+   49 binop: LE .
+
+    $default  reduce using rule 49 (binop)
+
+
+state 57
+
+   50 binop: LT .
+
+    $default  reduce using rule 50 (binop)
+
+
+state 58
+
+   51 binop: GE .
+
+    $default  reduce using rule 51 (binop)
+
+
+state 59
+
+   52 binop: GT .
+
+    $default  reduce using rule 52 (binop)
+
+
+state 60
+
+   53 binop: EQ .
+
+    $default  reduce using rule 53 (binop)
+
+
+state 61
+
+   54 binop: OR .
+
+    $default  reduce using rule 54 (binop)
+
+
+state 62
+
+   55 binop: AND .
+
+    $default  reduce using rule 55 (binop)
+
+
+state 63
+
+   56 binop: LET .
+
+    $default  reduce using rule 56 (binop)
+
+
+state 64
+
+   21 expr: expr binop . expr
+
+    BRACKET_L  shift, and go to state 30
+    TRUEVAL    shift, and go to state 31
+    FALSEVAL   shift, and go to state 32
+    NEG        shift, and go to state 33
+    NUM        shift, and go to state 34
+    FLOAT      shift, and go to state 35
+    ID         shift, and go to state 19
+
+    var            go to state 36
+    expr           go to state 73
+    expr_fun_call  go to state 38
+    constant       go to state 39
+    floatval       go to state 40
+    intval         go to state 41
+    boolval        go to state 42
+    monop          go to state 43
+
+
+state 65
+
+   21 expr: expr . binop expr
+   22     | monop expr .
+
+    MINUS    shift, and go to state 51
+    PLUS     shift, and go to state 52
+    STAR     shift, and go to state 53
+    SLASH    shift, and go to state 54
+    PERCENT  shift, and go to state 55
+    LE       shift, and go to state 56
+    LT       shift, and go to state 57
+    GE       shift, and go to state 58
+    GT       shift, and go to state 59
+    EQ       shift, and go to state 60
+    LET      shift, and go to state 63
+
+    $default  reduce using rule 22 (expr)
+
+    binop  go to state 64
+
+
+state 66
+
+   14 fundecl: EXTERN TYPE_VOID ID BRACKET_L params BRACKET_R . SEMICOLON
+
+    SEMICOLON  shift, and go to state 74
+
+
+state 67
+
+   16 params: basictype var . COMMA params
+   17       | basictype var .
+
+    COMMA  shift, and go to state 75
+
+    $default  reduce using rule 17 (params)
+
+
+state 68
+
+   13 fundecl: EXTERN basictype ID BRACKET_L params BRACKET_R . SEMICOLON
+
+    SEMICOLON  shift, and go to state 76
+
+
+state 69
+
+   23 expr: BRACKET_L expr BRACKET_R .
+
+    $default  reduce using rule 23 (expr)
+
+
+state 70
+
+   25 expr: BRACKET_L basictype BRACKET_R . expr
+
+    BRACKET_L  shift, and go to state 30
+    TRUEVAL    shift, and go to state 31
+    FALSEVAL   shift, and go to state 32
+    NEG        shift, and go to state 33
+    NUM        shift, and go to state 34
+    FLOAT      shift, and go to state 35
+    ID         shift, and go to state 19
+
+    var            go to state 36
+    expr           go to state 77
+    expr_fun_call  go to state 38
+    constant       go to state 39
+    floatval       go to state 40
+    intval         go to state 41
+    boolval        go to state 42
+    monop          go to state 43
+
+
+state 71
+
+   29 expr_fun_call: var BRACKET_L @6 . opt_arguments BRACKET_R
+
+    BRACKET_L  shift, and go to state 30
+    TRUEVAL    shift, and go to state 31
+    FALSEVAL   shift, and go to state 32
+    NEG        shift, and go to state 33
+    NUM        shift, and go to state 34
+    FLOAT      shift, and go to state 35
+    ID         shift, and go to state 19
+
+    var            go to state 36
+    expr           go to state 78
+    expr_fun_call  go to state 38
+    opt_arguments  go to state 79
+    constant       go to state 39
+    floatval       go to state 40
+    intval         go to state 41
+    boolval        go to state 42
+    monop          go to state 43
+
+
+state 72
+
+   31 expr_fun_call: var BRACKET_L @7 . BRACKET_R
+
+    BRACKET_R  shift, and go to state 80
+
+
+state 73
+
+   21 expr: expr . binop expr
+   21     | expr binop expr .
+
+    MINUS    shift, and go to state 51
+    PLUS     shift, and go to state 52
+    STAR     shift, and go to state 53
+    SLASH    shift, and go to state 54
+    PERCENT  shift, and go to state 55
+    LE       shift, and go to state 56
+    LT       shift, and go to state 57
+    GE       shift, and go to state 58
+    GT       shift, and go to state 59
+    EQ       shift, and go to state 60
+    LET      shift, and go to state 63
+
+    $default  reduce using rule 21 (expr)
+
+    binop  go to state 64
+
+
+state 74
+
+   14 fundecl: EXTERN TYPE_VOID ID BRACKET_L params BRACKET_R SEMICOLON .
+
+    $default  reduce using rule 14 (fundecl)
+
+
+state 75
+
+   16 params: basictype var COMMA . params
+
+    TYPE_FLOAT  shift, and go to state 3
+    TYPE_BOOL   shift, and go to state 4
+    TYPE_INT    shift, and go to state 5
+
+    $default  reduce using rule 15 (params)
+
+    params     go to state 81
+    basictype  go to state 45
+
+
+state 76
+
+   13 fundecl: EXTERN basictype ID BRACKET_L params BRACKET_R SEMICOLON .
+
+    $default  reduce using rule 13 (fundecl)
+
+
+state 77
+
+   21 expr: expr . binop expr
+   25     | BRACKET_L basictype BRACKET_R expr .
+
+    MINUS    shift, and go to state 51
+    PLUS     shift, and go to state 52
+    STAR     shift, and go to state 53
+    SLASH    shift, and go to state 54
+    PERCENT  shift, and go to state 55
+    LE       shift, and go to state 56
+    LT       shift, and go to state 57
+    GE       shift, and go to state 58
+    GT       shift, and go to state 59
+    EQ       shift, and go to state 60
+    LET      shift, and go to state 63
+
+    $default  reduce using rule 25 (expr)
+
+    binop  go to state 64
+
+
+state 78
+
+   21 expr: expr . binop expr
+   32 opt_arguments: expr . COMMA exprs
+   33              | expr .
+
+    COMMA    shift, and go to state 82
+    MINUS    shift, and go to state 51
+    PLUS     shift, and go to state 52
+    STAR     shift, and go to state 53
+    SLASH    shift, and go to state 54
+    PERCENT  shift, and go to state 55
+    LE       shift, and go to state 56
+    LT       shift, and go to state 57
+    GE       shift, and go to state 58
+    GT       shift, and go to state 59
+    EQ       shift, and go to state 60
+    OR       shift, and go to state 61
+    AND      shift, and go to state 62
+    LET      shift, and go to state 63
+
+    $default  reduce using rule 33 (opt_arguments)
+
+    binop  go to state 64
+
+
+state 79
+
+   29 expr_fun_call: var BRACKET_L @6 opt_arguments . BRACKET_R
+
+    BRACKET_R  shift, and go to state 83
+
+
+state 80
+
+   31 expr_fun_call: var BRACKET_L @7 BRACKET_R .
+
+    $default  reduce using rule 31 (expr_fun_call)
+
+
+state 81
+
+   16 params: basictype var COMMA params .
+
+    $default  reduce using rule 16 (params)
+
+
+state 82
+
+   32 opt_arguments: expr COMMA . exprs
+
+    BRACKET_L  shift, and go to state 30
+    TRUEVAL    shift, and go to state 31
+    FALSEVAL   shift, and go to state 32
+    NEG        shift, and go to state 33
+    NUM        shift, and go to state 34
+    FLOAT      shift, and go to state 35
+    ID         shift, and go to state 19
+
+    var            go to state 36
+    expr           go to state 84
+    exprs          go to state 85
+    expr_fun_call  go to state 38
+    constant       go to state 39
+    floatval       go to state 40
+    intval         go to state 41
+    boolval        go to state 42
+    monop          go to state 43
+
+
+state 83
+
+   29 expr_fun_call: var BRACKET_L @6 opt_arguments BRACKET_R .
+
+    $default  reduce using rule 29 (expr_fun_call)
+
+
+state 84
+
+   21 expr: expr . binop expr
+   26 exprs: expr . COMMA exprs
+   27      | expr .
+
+    COMMA    shift, and go to state 86
+    MINUS    shift, and go to state 51
+    PLUS     shift, and go to state 52
+    STAR     shift, and go to state 53
+    SLASH    shift, and go to state 54
+    PERCENT  shift, and go to state 55
+    LE       shift, and go to state 56
+    LT       shift, and go to state 57
+    GE       shift, and go to state 58
+    GT       shift, and go to state 59
+    EQ       shift, and go to state 60
+    OR       shift, and go to state 61
+    AND      shift, and go to state 62
+    LET      shift, and go to state 63
+
+    $default  reduce using rule 27 (exprs)
+
+    binop  go to state 64
+
+
+state 85
+
+   32 opt_arguments: expr COMMA exprs .
+
+    $default  reduce using rule 32 (opt_arguments)
+
+
+state 86
+
+   26 exprs: expr COMMA . exprs
+
+    BRACKET_L  shift, and go to state 30
+    TRUEVAL    shift, and go to state 31
+    FALSEVAL   shift, and go to state 32
+    NEG        shift, and go to state 33
+    NUM        shift, and go to state 34
+    FLOAT      shift, and go to state 35
+    ID         shift, and go to state 19
+
+    var            go to state 36
+    expr           go to state 84
+    exprs          go to state 87
+    expr_fun_call  go to state 38
+    constant       go to state 39
+    floatval       go to state 40
+    intval         go to state 41
+    boolval        go to state 42
+    monop          go to state 43
+
+
+state 87
+
+   26 exprs: expr COMMA exprs .
+
+    $default  reduce using rule 26 (exprs)

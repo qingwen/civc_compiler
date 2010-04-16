@@ -1,0 +1,87 @@
+/*
+ * Phase and subphase definitions
+ */
+
+
+#include "phase_initialise_defs.mac"
+
+/******************************************************************************/
+
+
+PHASE( ld,
+       "Loading CivC program",
+       ALWAYS)
+
+SUBPHASE( cpp,
+          "Running C preprocessor",
+          SPdoRunPreProcessor, 
+          NEVER,
+          ld)
+
+SUBPHASE( scp,
+          "Reading input file",
+          SPdoScanParse, 
+          ALWAYS,
+          ld)
+
+ENDPHASE( ld) 
+
+/******************************************************************************/
+
+
+PHASE( qc,
+       "Assignment series 2",
+       ALWAYS)
+
+/*
+SUBPHASE( cpp,
+          "Running...",
+          michaeldoFoo, 
+          ALWAYS,
+          qc)
+*/
+ENDPHASE( qc) 
+
+/******************************************************************************/
+
+
+PHASE( cg,
+       "Generating Code",
+       ALWAYS)
+
+SUBPHASE( prt, 
+          "Generating byte code",
+          PRTdoPrint, 
+          ALWAYS,
+          cg)  
+
+SUBPHASE( ca, 
+          "Context analysis",
+          CAdoContextAnalysis, 
+          ALWAYS,
+          cg)
+
+SUBPHASE( tc, 
+          "Type check",
+          TCdoTypeCheck, 
+          ALWAYS,
+          cg)    
+
+SUBPHASE( acg, 
+          "Assembly code generate",
+          ACGdoAssemblyCodeGen, 
+          ALWAYS,
+          cg)  
+
+SUBPHASE( frtr, 
+          "De-allocating syntax tree representation",
+          FREEdoFreeTree, 
+          ALWAYS,
+          cg)
+
+ENDPHASE( cg) 
+
+
+/******************************************************************************/
+
+#include "phase_undefine_defs.mac"

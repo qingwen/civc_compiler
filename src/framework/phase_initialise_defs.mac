@@ -1,0 +1,284 @@
+/* ---------------------------------------------------------------------------
+ * 
+ * SAC Compiler Construction Framework
+ * 
+ * ---------------------------------------------------------------------------
+ * 
+ * SAC COPYRIGHT NOTICE, LICENSE, AND DISCLAIMER
+ * 
+ * (c) Copyright 1994 - 2010 by
+ * 
+ *   SAC Development Team
+ *   SAC Research Foundation
+ * 
+ *   http://www.sac-home.org
+ *   email:info@sac-home.org
+ * 
+ *   All rights reserved
+ * 
+ * ---------------------------------------------------------------------------
+ * 
+ * The SAC compiler construction framework, all accompanying 
+ * software and documentation (in the following named this software)
+ * is developed by the SAC Development Team (in the following named
+ * the developer) which reserves all rights on this software.
+ * 
+ * Permission to use this software is hereby granted free of charge
+ * exclusively for the duration and purpose of the course 
+ *   "Compilers and Operating Systems" 
+ * of the MSc programme Grid Computing at the University of Amsterdam.
+ * Redistribution of the software or any parts thereof as well as any
+ * alteration  of the software or any parts thereof other than those 
+ * required to use the compiler construction framework for the purpose
+ * of the above mentioned course are not permitted.
+ * 
+ * The developer disclaims all warranties with regard to this software,
+ * including all implied warranties of merchantability and fitness.  In no
+ * event shall the developer be liable for any special, indirect or
+ * consequential damages or any damages whatsoever resulting from loss of
+ * use, data, or profits, whether in an action of contract, negligence, or
+ * other tortuous action, arising out of or in connection with the use or
+ * performance of this software. The entire risk as to the quality and
+ * performance of this software is with you. Should this software prove
+ * defective, you assume the cost of all servicing, repair, or correction.
+ * 
+ * ---------------------------------------------------------------------------
+ */ 
+
+
+
+
+#define ALWAYS TRUE
+#define NEVER FALSE
+#define ONLYIF(c) c
+
+#define RESET TRUE
+
+#ifndef PHASEname
+#define PHASEname(name)
+#define PHASEname__defined
+#endif
+
+#ifndef PHASEtext
+#define PHASEtext(text)
+#define PHASEtext__defined
+#endif
+
+#ifndef PHASEcond
+#define PHASEcond(cond)
+#define PHASEcond__defined
+#endif
+
+
+#ifndef PHASE
+#define PHASE( name, text, cond) \
+  PHASEname(name)                           \
+  PHASEtext(text)                                 \
+  PHASEcond(cond)                       
+#define PHASE__defined
+#endif
+
+
+#ifndef ENDPHASE
+#define ENDPHASE(name)
+#define ENDPHASE__defined
+#endif
+
+
+
+#ifndef SUBPHASEname
+#define SUBPHASEname(name)
+#define SUBPHASEname__defined
+#endif
+
+#ifndef SUBPHASEtext
+#define SUBPHASEtext(text)
+#define SUBPHASEtext__defined
+#endif
+
+#ifndef SUBPHASEfun
+#define SUBPHASEfun(fun)
+#define SUBPHASEfun__defined
+#endif
+
+#ifndef SUBPHASEcond
+#define SUBPHASEcond(cond)
+#define SUBPHASEcond__defined
+#endif
+
+#ifndef SUBPHASEphase
+#define SUBPHASEphase(phase)
+#define SUBPHASEphase__defined
+#endif
+
+
+#ifndef SUBPHASE
+#define SUBPHASE( name, text, fun, cond, phase)  \
+  SUBPHASEname(name)                             \
+  SUBPHASEtext(text)                             \
+  SUBPHASEfun(fun)                               \
+  SUBPHASEcond(cond)                             \
+  SUBPHASEphase(phase)
+#define SUBPHASE__defined
+#endif
+
+
+
+#ifndef CYCLEname
+#define CYCLEname(name)
+#define CYCLEname__defined
+#endif
+
+#ifndef CYCLEtext
+#define CYCLEtext(text)
+#define CYCLEtext__defined
+#endif
+
+#ifndef CYCLEcond
+#define CYCLEcond(cond)
+#define CYCLEcond__defined
+#endif
+
+#ifndef CYCLEphase
+#define CYCLEphase(phase)
+#define CYCLEphase__defined
+#endif
+
+#ifndef CYCLEreset
+#define CYCLEreset(reset)
+#define CYCLEreset__defined
+#endif
+
+
+#ifndef CYCLE
+#define CYCLE( name, text, cond, phase, reset)  \
+  CYCLEname(name)                             \
+  CYCLEtext(text)                             \
+  CYCLEcond(cond)                             \
+  CYCLEphase(phase)                           \
+  CYCLEreset(reset)
+#define CYCLE__defined
+#endif
+
+#ifndef ENDCYCLE
+#define ENDCYCLE( name)
+#define ENDCYCLE__defined
+#endif
+
+
+#ifndef FUNBEGINname
+#define FUNBEGINname( name)
+#define FUNBEGINname__defined
+#endif
+
+#ifndef FUNBEGINphase
+#define FUNBEGINphase( phase)
+#define FUNBEGINphase__defined
+#endif
+
+#ifndef FUNBEGINcycle
+#define FUNBEGINcycle( cycle)
+#define FUNBEGINcycle__defined
+#endif
+
+#ifndef FUNBEGIN
+#define FUNBEGIN( name, phase, cycle)  \
+  FUNBEGINname( name)    \
+  FUNBEGINphase( phase)  \
+  FUNBEGINcycle( cycle)
+#define FUNBEGIN__defined
+#endif
+
+
+#ifndef FUNEND
+#define FUNEND( name)
+#define FUNEND__defined
+#endif
+
+
+#ifndef CYCLEPHASEname
+#define CYCLEPHASEname(name)
+#define CYCLEPHASEname__defined
+#endif
+
+#ifndef CYCLEPHASEtext
+#define CYCLEPHASEtext(text)
+#define CYCLEPHASEtext__defined
+#endif
+
+#ifndef CYCLEPHASEfun
+#define CYCLEPHASEfun(fun)
+#define CYCLEPHASEfun__defined
+#endif
+
+#ifndef CYCLEPHASEcond
+#define CYCLEPHASEcond(cond)
+#define CYCLEPHASEcond__defined
+#endif
+
+#ifndef CYCLEPHASEphase
+#define CYCLEPHASEphase(phase)
+#define CYCLEPHASEphase__defined
+#endif
+
+#ifndef CYCLEPHASEcycle
+#define CYCLEPHASEcycle(cycle)
+#define CYCLEPHASEcycle__defined
+#endif
+
+
+#ifndef CYCLEPHASE
+#define CYCLEPHASE( name, text, fun, cond, phase, cycle)  \
+  CYCLEPHASEname(name)                                    \
+  CYCLEPHASEtext(text)                                    \
+  CYCLEPHASEfun(fun)                                      \
+  CYCLEPHASEcond(cond)                                    \
+  CYCLEPHASEphase(phase)                                  \
+  CYCLEPHASEcycle(cycle)
+#define CYCLEPHASE__defined
+#endif
+
+
+
+#ifndef CYCLEPHASEFUNname
+#define CYCLEPHASEFUNname(name)
+#define CYCLEPHASEFUNname__defined
+#endif
+
+#ifndef CYCLEPHASEFUNtext
+#define CYCLEPHASEFUNtext(text)
+#define CYCLEPHASEFUNtext__defined
+#endif
+
+#ifndef CYCLEPHASEFUNfun
+#define CYCLEPHASEFUNfun(fun)
+#define CYCLEPHASEFUNfun__defined
+#endif
+
+#ifndef CYCLEPHASEFUNcond
+#define CYCLEPHASEFUNcond(cond)
+#define CYCLEPHASEFUNcond__defined
+#endif
+
+#ifndef CYCLEPHASEFUNphase
+#define CYCLEPHASEFUNphase(phase)
+#define CYCLEPHASEFUNphase__defined
+#endif
+
+#ifndef CYCLEPHASEFUNcycle
+#define CYCLEPHASEFUNcycle(cycle)
+#define CYCLEPHASEFUNcycle__defined
+#endif
+
+
+#ifndef CYCLEPHASEFUN
+#define CYCLEPHASEFUN( name, text, fun, cond, phase, cycle)  \
+  CYCLEPHASEFUNname(name)                                    \
+  CYCLEPHASEFUNtext(text)                                    \
+  CYCLEPHASEFUNfun(fun)                                      \
+  CYCLEPHASEFUNcond(cond)                                    \
+  CYCLEPHASEFUNphase(phase)                                  \
+  CYCLEPHASEFUNcycle(cycle)
+#define CYCLEPHASEFUN__defined
+#endif
+

@@ -1,0 +1,36 @@
+#ifndef GLOBALtype
+#define GLOBALtype( type)
+#endif
+
+#ifndef GLOBALname
+#define GLOBALname( name)
+#endif
+
+#ifndef GLOBALinit
+#define GLOBALinit( init)
+#endif
+
+
+#define GLOBAL( type, name, init) GLOBALtype(type) GLOBALname(name) GLOBALinit(init)
+
+/*
+ * Syntax tree root
+ */
+
+
+GLOBAL( node *, syntax_tree, NULL)
+
+/*
+ * CivCC specific global variables
+ */
+
+#if 0
+GLOBAL( type, name, init)
+#endif
+
+#undef GLOBALtype
+#undef GLOBALname
+#undef GLOBALinit
+#undef GLOBAL
+
+

@@ -1,0 +1,56 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{multirow}
+\usepackage{stmaryrd}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\title{Use manual for our compiler}
+\author{Zhangzheng Zheng \and Qingwen Chen}
+
+\begin{document}
+\maketitle
+
+\section{Scan and Parse}
+\subsection*{Lexical analysis $\langle$position: ./src/scanparse/civc.l$\rangle$}
+Nothing special.
+\subsection*{syntactic analysis $\langle$position: ./src/scanparse/civc.y$\rangle$}
+Nothing special.
+
+\section{Phases/sub-phases}
+\subsection{Print $\langle$position: ./src/print/print.c$\rangle$ }
+This is the sub-phase right after we build our abstract syntax tree (AST) with lex and yacc. Its purpose is to visualize the AST by printing it to stdout as a Civc program. We traverse the AST, and each time we reach a node, we print out the information stored in that node in the format specified by civc grammar.  The printing decision is made according to the attributes of the node, such as type of the node, status of its sons etc. For example, for a while-loop node which has a pred-son as the condition, a body son to indicate the body of the while-loop, we first print out '\texttt{while (}' when we reach this node, then traverse to its pred-son and print '\texttt{) \{ }' after that. Next, we traverse the body-son and print '\texttt{\}}' at the end.
+
+In this sub-phase, we also visualize the precedence of binary/unary and cast operations by including the operation in a pair of brackets.
+
+\subsection{Context analysis $\langle$position: ./src/contextanalysis/contextanalysis.c$\rangle$}
+Context analysis deals with the following two tasks:
+\begin{itemize}
+\item Find the declaration of each used variable, and add a pointer to the corresponding declaration. If a variable is used without declaration, report semantic error and indicate which line the error is.
+ \item For each function call, find the corresponding declaration and add a pointer in the function-call node to point to its declaration. An error message    is generated if no declaration is found.
+\end{itemize}
+
+\subsection{Type check $\langle$position: ./src/typecheck/typecheck.c$\rangle$}
+There are three kinds of type checking we should do in this sub-phase: type matching for binary/unary operations as well as assignment, type of return/argument matching in functions. Here is a list about what we have done in this sub-phase:
+\begin{center}
+\begin{tabular}{|l|l|l|p{5cm}|}
+\hline
+    &   & allowed types & extra restrictions \\ \hline
+\multirow{4}{*}{Binop} 
+    & $+, -, *, /$ & int, float &  \multirow{4}{*}{right matches left}\\ \cline{2-3}
+    & $\%$ & int & \\ \cline{2-3}
+    & $>, >=, <, <=$ & int, float & \\\cline{2-3}
+    & $\&\&, ||$ & bool & \\ \hline
+\multirow{2}{*}{Monop}
+    & $-$ & int, float & \multirow{2}{*}{right matches left} \\\cline{2-3}
+    & $!$ & bool & \\ \hline
+\multirow{2}{*}{Function}
+    & arguments & int, float, bool & types of arguments match parameters' in the declaration \\ \cline{2-4}
+    & return & int, float & returned type matches its declared one. If the function is declared to return void, no return statement exists in the function body. \\ \hline
+\end{tabular}
+\end{center}
+
+\subsection{Assembly code generation}
+
+\section{Problems}
+
+\end{document} 

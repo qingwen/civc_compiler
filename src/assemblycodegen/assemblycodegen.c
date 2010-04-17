@@ -203,133 +203,181 @@ ACGbinop (node * arg_node, info * arg_info)
 {
     DBUG_ENTER ("ACGbinop");
 
-    arg_info->type_op = OP_LOAD;
-    BINOP_LEFT( arg_node) = TRAVdo( BINOP_LEFT( arg_node), arg_info);
+    int temp_cnt_jump = 0;
+    bool temp_code_gen = FALSE;
 
-    arg_info->type_op = OP_LOAD;
-    BINOP_RIGHT( arg_node) = TRAVdo( BINOP_RIGHT( arg_node), arg_info);
+    if (BINOP_OP(arg_node) != BO_or && BINOP_OP(arg_node)) {
 
-    switch ( arg_info->current_type )
-    {
-    case T_int:
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "\ti");
+        arg_info->type_op = OP_LOAD;
+        BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
+
+        arg_info->type_op = OP_LOAD;
+        BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
+
+        switch (arg_info->current_type) {
+            case T_int:
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "\ti");
+                }
+                break;
+            case T_float:
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "\tf");
+                }
+                break;
+            case T_bool:
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "\tb");
+                }
+                break;
+            case T_void:
+                break;
+            case T_unknown:
+                DBUG_ASSERT(0, "unknown type detected!\n");
         }
-        break;
-    case T_float:
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "\tf");
+
+        switch (BINOP_OP(arg_node)) {
+            case BO_add:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "add\n");
+                }
+                break;
+            case BO_sub:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "sub\n");
+                }
+                break;
+            case BO_mul:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "mul\n");
+                }
+                break;
+            case BO_div:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "div\n");
+                }
+                break;
+            case BO_mod:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "mod\n");
+                }
+                break;
+            case BO_lt:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "lt\n");
+                }
+                break;
+            case BO_le:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "le\n");
+                }
+                break;
+            case BO_gt:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "gt\n");
+                }
+                break;
+            case BO_ge:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "ge\n");
+                }
+                break;
+            case BO_eq:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "eq\n");
+                }
+                break;
+            case BO_ne:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "ne\n");
+                }
+                break;
+            case BO_or:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "or\n");
+                }
+                break;
+            case BO_and:
+                arg_info->cnt_jump = arg_info->cnt_jump + 1;
+                if (arg_info->as_code_gen == TRUE) {
+                    fprintf(pFile, "and\n");
+                }
+                break;
+            case BO_unknown:
+                DBUG_ASSERT(0, "unknown binop detected!\n");
         }
-        break;
-    case T_bool:
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "\tb");
-        }
-        break;
-    case T_void:
-        break;
-    case T_unknown:
-        DBUG_ASSERT( 0, "unknown type detected!\n");
     }
+    else if (BINOP_OP(arg_node) == BO_or){
+        arg_info->type_op = OP_LOAD;
+        BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
 
-    switch ( BINOP_OP( arg_node) )
-    {
-    case BO_add:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "add\n");
+        arg_info->cnt_jump = arg_info->cnt_jump
+                + 3 // branch_f 4
+                + 1 // bloadc_t
+                + 3;// jump #
+
+        /*store the information in arg_info*/
+        temp_cnt_jump = arg_info->cnt_jump;
+        temp_code_gen = arg_info->as_code_gen;
+
+        arg_info->cnt_jump = 1; //start with 1
+        arg_info->as_code_gen = FALSE;
+        arg_info->type_op = OP_LOAD;
+        BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
+
+
+        arg_info->as_code_gen = temp_code_gen;
+        arg_info->cnt_jump += temp_cnt_jump;
+        if (arg_info->as_code_gen == TRUE) {
+            fprintf(pFile, "branch_f 4\n"); //to the instruction after jump
+            fprintf(pFile, "bloadc_t\n");
+            fprintf(pFile, "jump %d\n", arg_info->cnt_jump-temp_cnt_jump);
+            
+            arg_info->type_op = OP_LOAD;
+            BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
         }
-        break;
-    case BO_sub:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "sub\n");
+    }
+    else if (BINOP_OP(arg_node) == BO_and){
+        arg_info->type_op = OP_LOAD;
+        BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
+
+        arg_info->cnt_jump = arg_info->cnt_jump
+                + 3 // branch_f 4
+                + 1 // bloadc_t
+                + 3;// jump #
+
+        /*store the information in arg_info*/
+        temp_cnt_jump = arg_info->cnt_jump;
+        temp_code_gen = arg_info->as_code_gen;
+
+        arg_info->cnt_jump = 1; //start with 1
+        arg_info->as_code_gen = FALSE;
+        arg_info->type_op = OP_LOAD;
+        BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
+
+
+        arg_info->as_code_gen = temp_code_gen;
+        arg_info->cnt_jump += temp_cnt_jump;
+        if (arg_info->as_code_gen == TRUE) {
+            fprintf(pFile, "branch_t %d\n", 4); //to the instruction after jump
+            fprintf(pFile, "bloadc_f\n");
+            fprintf(pFile, "jump %d\n", arg_info->cnt_jump-temp_cnt_jump);
+
+            arg_info->type_op = OP_LOAD;
+            BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
         }
-        break;
-    case BO_mul:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "mul\n");
-        }
-        break;
-    case BO_div:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "div\n");
-        }
-        break;
-    case BO_mod:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "mod\n");
-        }
-        break;
-    case BO_lt:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "lt\n");
-        }
-        break;
-    case BO_le:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "le\n");
-        }
-        break;
-    case BO_gt:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "gt\n");
-        }
-        break;
-    case BO_ge:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "ge\n");
-        }
-        break;
-    case BO_eq:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "eq\n");
-        }
-        break;
-    case BO_ne:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "ne\n");
-        }
-        break;
-    case BO_or:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "or\n");
-        }
-        break;
-    case BO_and:
-        arg_info->cnt_jump = arg_info->cnt_jump + 1;
-        if (arg_info->as_code_gen == TRUE)
-        {
-            fprintf (pFile, "and\n");
-        }
-        break;
-    case BO_unknown:
-        DBUG_ASSERT( 0, "unknown binop detected!\n");
     }
 
     DBUG_RETURN (arg_node);

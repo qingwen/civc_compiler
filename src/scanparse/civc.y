@@ -381,8 +381,8 @@ expr: constant
       {
         $$ = $1;
       }
-    | expr OR expr   { $$ = TBmakeIf( BO_or, $1, $3); NODE_LINE($$) = global.line; }
-    | expr AND expr   { $$ = TBmakeBinop( BO_and, $1, $3); NODE_LINE($$) = global.line; }
+    | expr OR expr   { $$ = TBmakeBinop( BO_or, $1, $3); NODE_LINE($$) = global.line; }
+    | expr AND expr  { $$ = TBmakeBinop( BO_and, $1, $3); NODE_LINE($$) = global.line; }
     | expr EQ expr   { $$ = TBmakeBinop( BO_eq, $1, $3); NODE_LINE($$) = global.line; }
     | expr NE expr   { $$ = TBmakeBinop( BO_ne, $1, $3); NODE_LINE($$) = global.line; }
     | expr LE expr   { $$ = TBmakeBinop( BO_le, $1, $3); NODE_LINE($$) = global.line; }

@@ -324,9 +324,9 @@ ACGbinop (node * arg_node, info * arg_info)
         BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
 
         arg_info->cnt_jump = arg_info->cnt_jump
-                + 3 // branch_f 4
-                + 1 // bloadc_t
-                + 3;// jump #
+                + 1 + 2  // branch_f 4
+                + 1      // bloadc_t
+                + 1 + 2; // jump #
 
         /*store the information in arg_info*/
         temp_cnt_jump = arg_info->cnt_jump;
@@ -338,12 +338,13 @@ ACGbinop (node * arg_node, info * arg_info)
         BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
 
 
+        /*recover the information in arg_info*/
         arg_info->as_code_gen = temp_code_gen;
         arg_info->cnt_jump += temp_cnt_jump;
         if (arg_info->as_code_gen == TRUE) {
-            fprintf(pFile, "branch_f 4\n"); //to the instruction after jump
-            fprintf(pFile, "bloadc_t\n");
-            fprintf(pFile, "jump %d\n", arg_info->cnt_jump-temp_cnt_jump);
+            fprintf(pFile, "\tbranch_f 4\n"); //to the instruction after jump
+            fprintf(pFile, "\tbloadc_t\n");
+            fprintf(pFile, "\tjump %d\n", arg_info->cnt_jump-temp_cnt_jump);
             
             arg_info->type_op = OP_LOAD;
             BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
@@ -354,9 +355,9 @@ ACGbinop (node * arg_node, info * arg_info)
         BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
 
         arg_info->cnt_jump = arg_info->cnt_jump
-                + 3 // branch_f 4
-                + 1 // bloadc_t
-                + 3;// jump #
+                + 1 + 2  // branch_t 4
+                + 1      // bloadc_f
+                + 1 + 2; // jump #
 
         /*store the information in arg_info*/
         temp_cnt_jump = arg_info->cnt_jump;
@@ -371,9 +372,9 @@ ACGbinop (node * arg_node, info * arg_info)
         arg_info->as_code_gen = temp_code_gen;
         arg_info->cnt_jump += temp_cnt_jump;
         if (arg_info->as_code_gen == TRUE) {
-            fprintf(pFile, "branch_t %d\n", 4); //to the instruction after jump
-            fprintf(pFile, "bloadc_f\n");
-            fprintf(pFile, "jump %d\n", arg_info->cnt_jump-temp_cnt_jump);
+            fprintf(pFile, "\tbranch_t %d\n", 4); //to the instruction after jump
+            fprintf(pFile, "\tbloadc_f\n");
+            fprintf(pFile, "\tjump %d\n", arg_info->cnt_jump-temp_cnt_jump);
 
             arg_info->type_op = OP_LOAD;
             BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
@@ -1056,7 +1057,7 @@ ACGvarinfo(node * arg_node, info * arg_info)
     }
     else
     {
-        DBUG_ASSERT( 0, "wrong op type!\n");
+     //   DBUG_ASSERT( 0, "wrong op type!\n");
     }
 
     int index = 0;

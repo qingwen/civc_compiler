@@ -11,9 +11,9 @@
 \maketitle
 
 \section{Scan and Parse}
-\subsection*{Lexical analysis $\langle$position: ./src/scanparse/civc.l$\rangle$}
+\subsection{Lexical analysis $\langle$position: ./src/scanparse/civc.l$\rangle$}
 Nothing special.
-\subsection*{syntactic analysis $\langle$position: ./src/scanparse/civc.y$\rangle$}
+\subsection{syntactic analysis $\langle$position: ./src/scanparse/civc.y$\rangle$}
 Nothing special.
 
 \section{Phases/sub-phases}
@@ -34,7 +34,7 @@ There are three kinds of type checking we should do in this sub-phase: type matc
 \begin{center}
 \begin{tabular}{|l|l|l|p{5cm}|}
 \hline
-    &   & allowed types & extra restrictions \\ \hline
+    &   & Allowed types & Extra restrictions \\ \hline
 \multirow{4}{*}{Binop} 
     & $+, -, *, /$ & int, float &  \multirow{4}{*}{right matches left}\\ \cline{2-3}
     & $\%$ & int & \\ \cline{2-3}
@@ -50,6 +50,7 @@ There are three kinds of type checking we should do in this sub-phase: type matc
 \end{center}
 
 \subsection{Assembly code generation}
+This is the final phase of our compiler. We implemented Mileston 8 and 9 together by traversing the AST twice in this phase. The first traversal was used to calculate the offset for \emph{jump} instructions such as \emph{jump}, \emph{branch\_f} and \emph{branch\_t}. The offset was then used to generate the assembly code.
 
 \section{Problems}
 
